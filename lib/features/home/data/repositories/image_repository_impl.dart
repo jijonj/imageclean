@@ -44,7 +44,16 @@ class ImageRepositoryImpl implements ImageRepository {
         );
         return right(result);
       } on ServerException catch (e) {
-        return left(ServerFailure());
+        try {
+          final result = await imageLocalDatasource.saveImageToLocalStorage(
+            image,
+          );
+          return right(result);
+        } on CacheExceptions catch (e) {
+          return left(CacheFailure());
+        } catch (e) {
+          return left(GeneralFailure());
+        }
       } catch (e) {
         return left(GeneralFailure());
       }
